@@ -23,6 +23,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,11 +39,29 @@ public class GhostActivity extends AppCompatActivity {
     private boolean userTurn = false;
     private Random random = new Random();
 
+    private TextView txtWordFragment;
+    private TextView txtStatus;
+    private TextView txtScore;
+    private Button btnChallenge;
+    private Button btnRestart;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ghost);
         AssetManager assetManager = getAssets();
+        try {
+            InputStream inputStream = assetManager.open("words.txt");
+            dictionary = new SimpleDictionary(inputStream);
+        } catch (IOException e) {
+            Toast toast = Toast.makeText(this, "Could not load dictionary", Toast.LENGTH_LONG);
+            toast.show();
+        }
+        txtWordFragment = (TextView) findViewById(R.id.ghostText);
+        txtStatus = (TextView) findViewById(R.id.gameStatus);
+        txtScore = (TextView) findViewById(R.id.txtScore);
+        btnChallenge = (Button) findViewById(R.id.btnChallenge);
+        btnRestart = (Button) findViewById(R.id.btnReset);
         /**
          **
          **  YOUR CODE GOES HERE
@@ -113,6 +132,20 @@ public class GhostActivity extends AppCompatActivity {
          **  YOUR CODE GOES HERE
          **
          **/
+
+        if (keyCode > 28 && keyCode < 55) {
+            char c = (char) ('a' - KeyEvent.KEYCODE_A + keyCode);
+            txtWordFragment.append(Character.toString(c));
+
+            //TODO: Replace
+            //--------------------
+            String word = txtWordFragment.getText().toString();
+            if(dictionary.isWord(word)){
+                txtStatus.setText("Is a word");
+            }
+            //--------------------
+            return true;
+        }
         return super.onKeyUp(keyCode, event);
     }
 }
