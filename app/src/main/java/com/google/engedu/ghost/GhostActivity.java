@@ -19,6 +19,7 @@ import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,9 +36,13 @@ import java.util.Random;
 public class GhostActivity extends AppCompatActivity {
     private static final String COMPUTER_TURN = "Computer's turn";
     private static final String USER_TURN = "Your turn";
+    private final String SCORE = "Computer Score: %d  Player Score: %d";
     private GhostDictionary dictionary;
     private boolean userTurn = false;
-    private Random random = new Random();
+    private Random random = new Random(System.currentTimeMillis());
+
+    private int computerScore = 0;
+    private int playerScore = 0;
 
     private TextView txtWordFragment;
     private TextView txtStatus;
@@ -62,11 +67,38 @@ public class GhostActivity extends AppCompatActivity {
         txtScore = (TextView) findViewById(R.id.txtScore);
         btnChallenge = (Button) findViewById(R.id.btnChallenge);
         btnRestart = (Button) findViewById(R.id.btnReset);
-        /**
-         **
-         **  YOUR CODE GOES HERE
-         **
-         **/
+        btnChallenge.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //It is already a word
+                if (dictionary.isWord(String.valueOf(txtWordFragment.getText()))) {
+                    txtStatus.setText("Player Wins");
+                    playerScore++;
+                    onResult();
+                } else {
+                    // No word can be made with current prefix
+                    // If any word can be made with said prefix, computer wins.
+                    if (dictionary.getAnyWordStartingWith(String.valueOf(txtWordFragment.getText())) != null) {
+                        txtStatus.setText("Word Exists");
+                        computerScore++;
+                        txtWordFragment.setText(dictionary.getAnyWordStartingWith(String.valueOf(txtWordFragment.getText())));
+                        onResult();
+                    } else {
+                        // player wins
+                        txtStatus.setText("Player Wins");
+                        playerScore++;
+                        onResult();
+                    }
+                }
+            }
+        });
+
+        btnRestart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onStart(null);
+            }
+        });
         onStart(null);
     }
 
@@ -102,6 +134,7 @@ public class GhostActivity extends AppCompatActivity {
         userTurn = random.nextBoolean();
         TextView text = (TextView) findViewById(R.id.ghostText);
         text.setText("");
+        btnChallenge.setEnabled(true);
         TextView label = (TextView) findViewById(R.id.gameStatus);
         if (userTurn) {
             label.setText(USER_TURN);
@@ -112,11 +145,39 @@ public class GhostActivity extends AppCompatActivity {
         return true;
     }
 
+
+    public void onResult(){
+        userTurn = false;
+        txtScore.setText(String.format(SCORE,computerScore,playerScore));
+        btnChallenge.setEnabled(false);
+    }
+
     private void computerTurn() {
-        TextView label = (TextView) findViewById(R.id.gameStatus);
         // Do computer turn stuff then make it the user's turn again
+        String prefix = String.valueOf(txtWordFragment.getText());
+        if (dictionary.isWord(prefix)) {
+            txtStatus.setText("Computer won");
+            computerScore++;
+            onResult();
+            return;
+        }
+
+//        String possibleInput = dictionary.getAnyWordStartingWith(prefix);
+        String possibleInput = dictionary.getGoodWordStartingWith(prefix);
+
+        Log.v(possibleInput, "COMPUTERSENT");
+
+        if (possibleInput != null) {
+            String computerInput = Character.toString((possibleInput).charAt(prefix.length()));
+            txtWordFragment.append(computerInput);
+        } else {
+            txtStatus.setText("No such word exists.");
+            computerScore++;
+            onResult();
+            return;
+        }
         userTurn = true;
-        label.setText(USER_TURN);
+        txtStatus.setText(USER_TURN);
     }
 
     /**
@@ -127,25 +188,26 @@ public class GhostActivity extends AppCompatActivity {
      */
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        /**
-         **
-         **  YOUR CODE GOES HERE
-         **
-         **/
-
-        if (keyCode > 28 && keyCode < 55) {
-            char c = (char) ('a' - KeyEvent.KEYCODE_A + keyCode);
-            txtWordFragment.append(Character.toString(c));
-
-            //TODO: Replace
-            //--------------------
-            String word = txtWordFragment.getText().toString();
-            if(dictionary.isWord(word)){
-                txtStatus.setText("Is a word");
+        if (userTurn) {
+            if (keyCode > 28 && keyCode < 55) {
+                char c = (char) ('a' - KeyEvent.KEYCODE_A + keyCode);
+                txtStatus.setText(COMPUTER_TURN);
+                txtWordFragment.append(Character.toString(c));
+                userTurn = false;
+                computerTurn();
+                return true;
             }
-            //--------------------
-            return true;
         }
         return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedState) {
+        super.onRestoreInstanceState(savedState);
     }
 }
