@@ -167,6 +167,7 @@ public class GhostActivity extends AppCompatActivity {
 
         Log.v(possibleInput, "COMPUTERSENT");
 
+        
         if (possibleInput != null) {
             String computerInput = Character.toString((possibleInput).charAt(prefix.length()));
             txtWordFragment.append(computerInput);
