@@ -161,7 +161,6 @@ public class GhostActivity extends AppCompatActivity {
             onResult();
             return;
         }
-
 //        String possibleInput = dictionary.getAnyWordStartingWith(prefix);
         String possibleInput = dictionary.getGoodWordStartingWith(prefix);
 
