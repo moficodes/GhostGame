@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-
 public class FastDictionary implements GhostDictionary {
 
     private TrieNode root;
