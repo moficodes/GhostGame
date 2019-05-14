@@ -17,7 +17,6 @@ package com.google.engedu.ghost;
 
 import java.util.HashMap;
 
-
 public class TrieNode {
     private HashMap<String, TrieNode> children;
     private boolean isWord;
